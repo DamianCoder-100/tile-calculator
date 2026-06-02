@@ -1,125 +1,98 @@
-// storage.js — localStorage wrapper. No DOM access.
+// storage.js — Pure localStorage operations. No DOM access.
 
-export const STORAGE_KEY = 'perryQuotes_v3';
-export const DRAFT_KEY = 'perryDraft_v3';
-export const MAX_QUOTES = 15;
+const QUOTES_KEY = 'perry_tiling_quotes';
+const DRAFT_KEY = 'perry_tiling_draft';
 
-export function storageAvailable() {
-    try {
-        const test = '__test__';
-        localStorage.setItem(test, test);
-        localStorage.removeItem(test);
-        return true;
-    } catch {
-        return false;
-    }
+function generateId() {
+    return crypto.randomUUID? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).substr(2, 9);
 }
 
-export function storageQuotaWarning() {
-    if (!storageAvailable()) return false;
+export function loadQuotes() {
     try {
-        const quotes = localStorage.getItem(STORAGE_KEY) || '';
-        const draft = localStorage.getItem(DRAFT_KEY) || '';
-        const used = quotes.length + draft.length;
-        const estimate = 5 * 1024 * 1024;
-        return used > estimate * 0.8;
-    } catch {
-        return false;
-    }
-}
-
-export function saveDraft(rooms, formData) {
-    if (!storageAvailable()) return;
-    const draft = { rooms, form: formData };
-    try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        const data = localStorage.getItem(QUOTES_KEY);
+        return data? JSON.parse(data) : [];
     } catch (e) {
-        console.error('Draft save failed:', e);
-        if (e.name === 'QuotaExceededError') {
-            throw new Error('Storage full. Clear some old quotes.');
-        }
-        throw new Error('Draft save failed');
-    }
-}
-
-export function loadDraft() {
-    if (!storageAvailable()) return null;
-    try {
-        const draftRaw = localStorage.getItem(DRAFT_KEY);
-        return draftRaw? JSON.parse(draftRaw) : null;
-    } catch (e) {
-        console.error('Draft load failed, clearing corrupt data:', e);
-        localStorage.removeItem(DRAFT_KEY);
-        return null;
-    }
-}
-
-export function clearDraft() {
-    if (storageAvailable()) {
-        try {
-            localStorage.removeItem(DRAFT_KEY);
-        } catch (e) {
-            console.error('Clear draft failed:', e);
-        }
-    }
-}
-
-function getQuotesSafe() {
-    if (!storageAvailable()) return [];
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw? JSON.parse(raw) : [];
-    } catch (e) {
-        console.error('Quotes corrupt, resetting:', e);
-        localStorage.removeItem(STORAGE_KEY);
+        console.error('Failed to load quotes:', e);
         return [];
     }
 }
 
 export function saveQuote(quote) {
-    if (!storageAvailable()) throw new Error('Storage unavailable');
-
-    let quotes = getQuotesSafe();
-    quotes.unshift(quote);
-    quotes = quotes.slice(0, MAX_QUOTES);
-
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(quotes));
-        clearDraft();
-    } catch (e) {
-        console.error('Quote save failed:', e);
-        if (e.name === 'QuotaExceededError') {
-            throw new Error('Storage full. Delete old quotes first.');
+        // Safety: ensure every quote has an ID before saving
+        if (!quote.id) quote.id = generateId();
+
+        const quotes = loadQuotes();
+        const idx = quotes.findIndex(q => String(q.id) === String(quote.id));
+        if (idx >= 0) {
+            quotes[idx] = quote;
+        } else {
+            quotes.push(quote);
         }
-        throw new Error('Quote save failed');
+        localStorage.setItem(QUOTES_KEY, JSON.stringify(quotes));
+    } catch (e) {
+        console.error('Failed to save quote:', e);
+        throw new Error('Storage full. Delete old quotes to save.');
     }
 }
 
-export function loadQuotes() {
-    return getQuotesSafe();
-}
-
 export function deleteQuote(id) {
-    if (!storageAvailable()) return;
-    let quotes = getQuotesSafe();
-    quotes = quotes.filter(q => q.id!== id);
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(quotes));
+        const quotes = loadQuotes();
+        const filtered = quotes.filter(q => String(q.id)!== String(id));
+        localStorage.setItem(QUOTES_KEY, JSON.stringify(filtered));
     } catch (e) {
-        console.error('Delete failed:', e);
+        console.error('Failed to delete quote:', e);
+        throw new Error('Failed to delete quote.');
     }
 }
 
 export function updateQuoteStatus(id, status) {
-    if (!storageAvailable()) return;
-    let quotes = getQuotesSafe();
-    const quote = quotes.find(q => q.id == id);
-    if (quote) {
-        quote.status = status;
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(quotes));
-        } catch (e) {
-            console.error('Status update failed:', e);
+    try {
+        const quotes = loadQuotes();
+        const quote = quotes.find(q => String(q.id) === String(id));
+        if (quote) {
+            quote.status = status;
+            localStorage.setItem(QUOTES_KEY, JSON.stringify(quotes));
         }
+    } catch (e) {
+        console.error('Failed to update status:', e);
+    }
+}
+
+export function saveDraft(rooms, form) {
+    try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ rooms, form }));
+    } catch (e) {
+        console.error('Failed to save draft:', e);
+    }
+}
+
+export function loadDraft() {
+    try {
+        const data = localStorage.getItem(DRAFT_KEY);
+        return data? JSON.parse(data) : null;
+    } catch (e) {
+        console.error('Failed to load draft:', e);
+        return null;
+    }
+}
+
+export function clearDraft() {
+    try {
+        localStorage.removeItem(DRAFT_KEY);
+    } catch (e) {
+        console.error('Failed to clear draft:', e);
+    }
+}
+
+export function storageQuotaWarning() {
+    try {
+        const test = 'x'.repeat(1024 * 1024); // 1MB test
+        localStorage.setItem('__test', test);
+        localStorage.removeItem('__test');
+        return false;
+    } catch {
+        return true;
     }
 }
