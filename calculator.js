@@ -17,24 +17,31 @@ export function parseTileSize(str) {
     return { l, w };
 }
 
-export function calculateMaterials(totalSqft, config, tileForCalc, boxCoverage) {
+export function calculateMaterials(totalSqft, config, tileForCalc, boxCoverage, wastePercent = 10) {
     if (totalSqft <= 0) {
         return { mortarBags: 0, groutBags: 0, tileBoxes: 0, totalTiles: 0 };
     }
 
     // Hard fallbacks if rendering.js passes garbage
     tileForCalc = tileForCalc && tileForCalc.l > 0 && tileForCalc.w > 0
-       ? tileForCalc
+    ? tileForCalc
         : { l: 12, w: 12 };
 
-    boxCoverage = boxCoverage > 0? boxCoverage : 10;
+    // FIXED: Default to 15 sqft/box industry standard, not 10
+    boxCoverage = boxCoverage > 0? boxCoverage : 15;
+
+    // FIXED: Sanitize waste % - clamp 0-50%
+    wastePercent = Math.max(0, Math.min(50, parseFloat(wastePercent) || 10));
+    const totalSqftWithWaste = totalSqft * (1 + wastePercent / 100);
 
     const trowelCoverage = Math.max(1, parseFloat(config.trowelCoverage) || 60);
     let mortarBags = 0;
+    // FIXED: Mortar uses actual sqft + 5% slop, NOT tile cut waste
+    const mortarSqft = totalSqft * 1.05;
     if (config.mortarType === 'thinset') {
-        mortarBags = Math.ceil(totalSqft / trowelCoverage);
+        mortarBags = Math.ceil(mortarSqft / trowelCoverage);
     } else {
-        mortarBags = Math.ceil(totalSqft / 100);
+        mortarBags = Math.ceil(mortarSqft / 100);
     }
 
     const jointW = Math.max(0.01, parseFloat(config.groutJoint) || 0.125);
@@ -43,14 +50,16 @@ export function calculateMaterials(totalSqft, config, tileForCalc, boxCoverage) 
     // Grout formula: 200 / ((L+W)/(L*W) * joint * 12)
     // Prevent divide by zero if tileArea is somehow 0
     const groutCoverage = tileArea > 0
-      ? 200 / (((tileForCalc.l + tileForCalc.w) / tileArea) * jointW * 12)
+   ? 200 / (((tileForCalc.l + tileForCalc.w) / tileArea) * jointW * 12)
         : 200;
-    const groutBags = Math.ceil(totalSqft / Math.max(1, groutCoverage));
+    const groutBags = Math.ceil(totalSqftWithWaste / Math.max(1, groutCoverage));
 
+    // FIXED: Use totalSqftWithWaste for boxes, not raw totalSqft
     const coverage = Math.max(0.01, boxCoverage);
-    const tileBoxes = Math.ceil(totalSqft / coverage);
+    const tileBoxes = Math.ceil(totalSqftWithWaste / coverage);
+
     const tileSqFt = (tileForCalc.l * tileForCalc.w) / 144;
-    const totalTiles = tileSqFt > 0? Math.ceil(totalSqft / tileSqFt) : 0;
+    const totalTiles = tileSqFt > 0? Math.ceil(totalSqftWithWaste / tileSqFt) : 0;
 
     return { mortarBags, groutBags, tileBoxes, totalTiles };
 }

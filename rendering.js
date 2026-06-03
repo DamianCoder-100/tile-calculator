@@ -1,4 +1,5 @@
 // rendering.js - Complete logic for Perry's Tiling Quote Calculator
+import { calculateMaterials, calculateCosts, parseTileSize } from './calculator.js';
 
 // ===== STATE =====
 let rooms = [];
@@ -181,7 +182,7 @@ function calculateTotals() {
     const subtractSqft = parseFloat(document.getElementById('subtractSqft').value) || 0;
     const patternMult = parseFloat(document.getElementById('patternMultiplier').value) || 1;
     const tileSize = document.getElementById('tileSize').value;
-    const boxCoverage = parseFloat(document.getElementById('tileBoxCoverage').value) || 10;
+    const boxCoverage = parseFloat(document.getElementById('tileBoxCoverage').value) || 15;
     const tilePriceSqft = parseFloat(document.getElementById('tilePriceSqft').value) || 0;
     const mortarType = document.getElementById('mortarType').value;
     const trowelSize = parseFloat(document.getElementById('trowelSize').value) || 60;
@@ -204,92 +205,56 @@ function calculateTotals() {
     });
 
     const netSqft = Math.max(0, baseSqft - subtractSqft);
-    const adjustedSqft = netSqft * (1 + waste / 100) * patternMult;
 
-    // === TILE CALCULATION ===
-    const tileArea = getTileArea(tileSize);
-    const totalTiles = tileArea > 0? Math.ceil(adjustedSqft / tileArea) : 0;
-    const boxes = Math.ceil(adjustedSqft / boxCoverage);
+    // Parse tile size - use parseTileSize from calculator.js
+    const tileForCalc = parseTileSize(tileSize) || { l: 12, w: 12 };
+    const tileDim = (tileForCalc.l + tileForCalc.w) / 2;
 
-    // === THINSET/MORTAR CALCULATION ===
-    const mortarCoverage = mortarType === 'cement'? 100 : trowelSize;
-    const mortarBags = Math.ceil(adjustedSqft / mortarCoverage);
+    // Auto 15% waste for 24"+ tile, otherwise use input
+    const wastePercent = tileDim >= 24? 15 : waste;
+    const adjustedSqft = netSqft * patternMult; // pattern applied before waste
 
-    // === GROUT CALCULATION ===
-    // Based on Perry's rule: 100 sqft of 12x12 @ 1/8" joint = ~8 lbs = 1 bag
-    // Baseline: 125 sqft per 10lb bag for 12x12 with 1/8" joint
-    const tileDim = getTileAverageDimension(tileSize);
-    const baselineSqftPerBag = 125;
-    
-    // Joint factor: 1/8" = 1.0, 1/16" = 0.5, 1/4" = 2.0
-    const jointFactor = groutJoint / 0.125;
-    
-    // Tile factor: smaller tiles = more grout lines. 12x12 = 1.0, 6x6 = 2.0
-    const tileFactor = 12 / tileDim;
-    
-    // Adjusted coverage per bag
-    const groutSqftPerBag = baselineSqftPerBag / (jointFactor * tileFactor);
-    // const groutBags = Math.max(1, Math.ceil(adjustedSqft / groutSqftPerBag));
-    const groutBags = netSqft > 0 ? Math.max(1, Math.ceil(adjustedSqft / groutSqftPerBag)) : 0;
+    const config = {
+        mortarType,
+        trowelCoverage: trowelSize,
+        groutJoint,
+        mortarPrice,
+        groutPrice,
+        laborMethod,
+        laborRateSqft,
+        laborRateRoom,
+        laborFixed,
+        profitMargin,
+        taxRate
+    };
 
-    // === COST CALCULATIONS ===
-    let materialCost = 0;
-    materialCost += mortarBags * mortarPrice;
-    materialCost += groutBags * groutPrice;
-    if (tilePriceSqft > 0) materialCost += adjustedSqft * tilePriceSqft;
+    // Call pure math functions from calculator.js
+    const materials = calculateMaterials(adjustedSqft, config, tileForCalc, boxCoverage, wastePercent);
+    const costs = calculateCosts(baseSqft, adjustedSqft, materials, config, rooms.length);
 
-    let laborCost = 0;
-    if (laborMethod === 'sqft') laborCost = netSqft * laborRateSqft;
-    else if (laborMethod === 'room') laborCost = rooms.length * laborRateRoom;
-    else if (laborMethod === 'fixed') laborCost = laborFixed;
-
-    const subtotal = materialCost + laborCost;
-    const profit = subtotal * (profitMargin / 100);
-    const taxable = subtotal + profit;
-    const tax = taxable * (taxRate / 100);
-    const grandTotal = taxable + tax;
+    // FIXED: Don't apply waste twice. calculator.js already did it.
+    const totalSqftWithWaste = adjustedSqft * (1 + wastePercent / 100);
 
     updateEstimateDisplay({
         netSqft: Math.ceil(netSqft),
-        adjustedSqft: Math.ceil(adjustedSqft),
-        boxes,
-        mortarBags,
-        groutBags,
-        totalTiles,
-        materialCost,
-        laborCost,
-        subtotal,
-        profit,
+        adjustedSqft: Math.ceil(totalSqftWithWaste),
+        boxes: materials.tileBoxes,
+        mortarBags: materials.mortarBags,
+        groutBags: materials.groutBags,
+        totalTiles: materials.totalTiles,
+        materialCost: costs.materialCost,
+        laborCost: costs.laborCost,
+        subtotal: costs.subtotal,
+        profit: costs.profitAmt,
         profitMargin,
         taxRate,
-        grandTotal,
+        tax: costs.taxAmt,
+        grandTotal: costs.grandTotal,
         tilePriceSqft,
         rooms
     });
 
     updateClientDisplay();
-}
-
-function getTileArea(sizeStr) {
-    if (!sizeStr) return 1; // Default 12x12 = 1 sqft
-    const match = sizeStr.match(/(\d+)\s*x\s*(\d+)/i);
-    if (match) {
-        const w = parseInt(match[1]);
-        const h = parseInt(match[2]);
-        return (w * h) / 144; // Convert sq inches to sq ft
-    }
-    return 1;
-}
-
-function getTileAverageDimension(sizeStr) {
-    if (!sizeStr) return 12; // Default 12x12
-    const match = sizeStr.match(/(\d+)\s*x\s*(\d+)/i);
-    if (match) {
-        const w = parseInt(match[1]);
-        const h = parseInt(match[2]);
-        return (w + h) / 2; // Average of width and height
-    }
-    return 12;
 }
 
 // ===== DISPLAY UPDATES =====
@@ -600,7 +565,7 @@ function toggleTheme() {
     const body = document.body;
     const icon = document.getElementById('themeIcon');
     body.classList.toggle('light-mode');
-    
+
     if (body.classList.contains('light-mode')) {
         icon.classList.replace('bi-moon-stars', 'bi-sun');
         localStorage.setItem('perryTheme', 'light');

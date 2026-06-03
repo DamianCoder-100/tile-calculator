@@ -36,6 +36,36 @@
         .print-header {
             display: none;
         }
+        /* Force the total area banner to be pure black */
+.total-area-banner {
+    background-color: #f8f9fa !important; /* light gray background */
+    color: #000 !important; /* pure black text */
+    border: 2px solid #000 !important; /* black border so it shows on print */
+}
+
+.total-area-banner span {
+    color: #000 !important; /* override any Bootstrap text-muted */
+}
+
+.total-area-banner .h4 {
+    color: #000 !important; /* the big number specifically */
+}
+
+/* Print-specific fix - browsers love to make backgrounds white */
+@media print {
+    .total-area-banner {
+        background-color: #fff !important;
+        color: #000 !important;
+        border: 2px solid #000 !important;
+        -webkit-print-color-adjust: exact; /* Chrome/Safari */
+        print-color-adjust: exact; /* Firefox */
+    }
+    
+    .total-area-banner span,
+    .total-area-banner .h4 {
+        color: #000 !important;
+    }
+}
 
         @media print {
             .print-header {
@@ -318,9 +348,9 @@
                     <div class="card-body">
                         <!-- LOGO HEADER - SHOWS ONLY ON PRINT -->
                         <div class="print-header">
-                            <img src="perry-logo2026.png" alt="Perry's Tiling" class="print-logo">
                             <div class="print-company-info">
-                                <h2>Perry's Tiling</h2>
+                                <img src="perry-logo2026.png" alt="Perry's Tiling" class="print-logo">
+                                <!-- <h2>Perry's Tiling</h2> -->
                                 <p>Professional Tile Installation | Old Harbour, St. Catherine, Jamaica</p>
                                 <p>Tel: 876-817-3377 | perrystiling@gmail.com</p>
                                 <p><strong>Job Total: <span id="printTotalSqft">0 sq ft</span></strong></p>
