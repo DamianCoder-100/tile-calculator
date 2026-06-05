@@ -15,25 +15,23 @@
         <div class="row">
             <!-- Left Column: Form -->
             <div class="col-lg-7">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <img src="perry-logo2026.png" alt="Perry's Tiling" class="img-fluid"
+                            style="max-height: 80px; width:auto">
 
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
-    <div>
-        <img src="perry-logo2026.png" alt="Perry's Tiling" class="img-fluid d-block mb-2"
-            style="max-height: 70px; width:auto">
-        <div class="d-flex gap-2 flex-wrap">
-            <span id="quoteMode" class="badge bg-secondary">New Quote</span>
-            <span class="badge bg-secondary" id="quoteDate"></span>
-        </div>
-    </div>
-    <div class="d-flex gap-2 align-self-stretch align-self-md-center">
-        <button id="themeToggle" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-moon-stars" id="themeIcon"></i>
-        </button>
-        <button id="clearAllBtn" class="btn btn-outline-danger btn-sm">
-            <i class="bi bi-trash"></i> Clear All
-        </button>
-    </div>
-</div>
+                        <span id="quoteMode" class="badge bg-secondary">New Quote</span>
+                        <span class="badge bg-secondary ms-1" id="quoteDate"></span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button id="themeToggle" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-moon-stars" id="themeIcon"></i>
+                        </button>
+                        <button id="clearAllBtn" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Client Information -->
                 <div class="card mb-3">
@@ -69,12 +67,11 @@
                                 <label class="form-label small text-muted mb-1">Subtract Total (doors/windows) (sq
                                     ft)</label>
                                 <input type="number" step="0.1" class="form-control" id="subtractSqft" value="0">
-                                <div class="form-text">Reduces labor + billable area</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small text-muted mb-1">Waste % for Materials</label>
                                 <input type="number" class="form-control" id="waste" value="10">
-                                <div class="form-text">Only affects tile boxes. You get paid base sqft.</div>
+                                <div class="form-text">Only affects thinset/grout. You get paid base sqft.</div>
                             </div>
                         </div>
                     </div>
@@ -91,13 +88,23 @@
                                     placeholder="10">
                             </div>
                             <div class="col-md-4">
+                                <label class="form-label small text-muted mb-1">Grout Category</label>
+                                <select class="form-select" id="groutTier">
+                                    <option value="mosaic">Mosaic / Small - 3 bags/100sqft</option>
+                                    <option value="small">Small Tile 4x4-6x6 - 2 bags/100sqft</option>
+                                    <option value="standard" selected>Standard/Large 12x12+ - 1 bag/100sqft</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
                                 <label class="form-label small text-muted mb-1">Mortar Type</label>
                                 <select class="form-select" id="mortarType">
                                     <option value="thinset" selected>Thinset Only</option>
                                     <option value="cement">Cement/Sand Mix</option>
                                 </select>
                             </div>
-                            <div class="col-md-4" id="trowelSection">
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-6" id="trowelSection">
                                 <label class="form-label small text-muted mb-1">Trowel Size</label>
                                 <select class="form-select" id="trowelSize">
                                     <option value="80">1/4" x 1/4" - 80 sqft/bag</option>
@@ -107,48 +114,31 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="alert alert-info small mb-0">
-                            <i class="bi bi-info-circle"></i> Perry Mode: Grout = Total Floor + Total Wall ÷ 100. No joint math needed.
-                        </div>
                     </div>
                 </div>
 
-    
-<!-- Extra Services - Full Width Button Header -->
-<div class="card mb-3">
-    <div class="card-header p-0">
-        <div class="dropdown">
-            <button class="btn btn-primary w-100 rounded-0 rounded-top dropdown-toggle py-2" 
-                    type="button" 
-                    data-bs-toggle="dropdown" 
-                    data-bs-auto-close="outside"
-                    aria-expanded="false">
-                <i class="bi bi-plus-circle me-2"></i>Add Extra Service & Prep Work
-            </button>
-            <ul class="dropdown-menu w-100 shadow-lg" id="extraServicesMenu" style="min-width: 100%;">
-                <!-- JS populates preset services here -->
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-center fw-bold py-2" href="#" id="addCustomExtraBtn">
-                    <i class="bi bi-plus"></i> Custom Service
-                </a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="card-body p-2">
-        <!-- Column Labels - hide on mobile, show on md+ -->
-        <div class="row g-2 mb-2 d-none d-md-flex small text-muted fw-bold px-1">
-            <div class="col-md-4">Service</div>
-            <div class="col-md-2">Qty</div>
-            <div class="col-md-2">Amount</div>
-            <div class="col-md-2">Unit</div>
-            <div class="col-md-1 text-end">Total</div>
-            <div class="col-md-1"></div>
-        </div>
-        <div id="extrasContainer">
-            <p class="text-muted text-center mb-0">No extras added</p>
-        </div>
-    </div>
-</div>
+                <!-- Extra Services -->
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-tools"></i> Extra Services & Prep Work</span>
+                    </div>
+                    <div class="card-body" id="extrasContainer">
+                        <p class="text-muted text-center mb-0">No extras added</p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary btn-sm w-100 dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown">
+                                <i class="bi bi-plus"></i> Add Extra Service
+                            </button>
+                            <ul class="dropdown-menu w-100" id="extraServicesMenu"></ul>
+                        </div>
+                        <button class="btn btn-outline-secondary btn-sm w-100 mt-2" type="button"
+                            id="addCustomExtraBtn">
+                            <i class="bi bi-plus-circle"></i> Add Custom Line Item
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Labor & Pricing -->
                 <div class="card mb-3">
@@ -208,7 +198,6 @@
 
                         <div id="emptyState" class="text-center text-muted py-3">Add rooms to calculate</div>
 
-                        <!-- Fixed 2x2 Stat Grid -->
                         <div class="row g-2 mb-3">
                             <div class="col-6">
                                 <div class="stat-box text-center">
@@ -343,13 +332,13 @@
         </div>
     </div>
 
-    <!-- Add Room Modal v4.6 - Perry Mode -->
+    <!-- Add Room Modal with Surface Type Toggle -->
     <div class="modal fade" id="addRoomModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Set Space Metrics</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">Add Room/Area</h5><button type="button" class="btn-close"
+                        data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-2">
@@ -372,21 +361,34 @@
                         </div>
                     </div>
 
-                    <!-- Dimensions: Generic Dim1 x Dim2 -->
-                    <div class="row g-2 mb-2">
+                    <!-- Floor inputs: Length x Width -->
+                    <div id="floorInputs" class="row g-2 mb-2">
                         <div class="col-md-6">
-                            <label class="form-label">Length/Height (ft)</label>
-                            <input type="number" class="form-control" id="roomDim1" step="0.1" min="0" placeholder="Floor: Length, Wall: Height">
+                            <label class="form-label">Length (ft)</label>
+                            <input type="number" class="form-control" id="roomLength" step="0.1" min="0">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Width (ft)</label>
-                            <input type="number" class="form-control" id="roomDim2" step="0.1" min="0" placeholder="Width">
+                            <input type="number" class="form-control" id="roomWidth" step="0.1" min="0">
                         </div>
                     </div>
 
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="isHeight">
-                        <label class="form-check-label" for="isHeight">Add height adder for tall walls +J$60/sqft</label>
+                    <!-- Wall inputs: Height x Width -->
+                    <div id="wallInputs" class="row g-2 mb-2" style="display:none;">
+                        <div class="col-md-6">
+                            <label class="form-label">Height (ft)</label>
+                            <input type="number" class="form-control" id="roomHeight" step="0.1" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Width (ft)</label>
+                            <input type="number" class="form-control" id="roomWidthWall" step="0.1" min="0">
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="isHeight">
+                                <label class="form-check-label" for="isHeight">Add height adder for tall walls +J$60/sqft</label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row g-2 mb-2">
@@ -395,9 +397,8 @@
                             <select class="form-select" id="roomTileType"></select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Tile Profile</label>
-                            <select class="form-select" id="roomTileProfile"></select>
-                            <div class="form-text">Select from standard sizes</div>
+                            <label class="form-label">Tile Size/Style</label>
+                            <input type="text" class="form-control" id="tileSize" placeholder="12x24, 6x24, Mosaic">
                         </div>
                     </div>
                     <div class="row g-2 mb-2">
@@ -418,11 +419,21 @@
                             </select>
                         </div>
                     </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-12">
+                            <label class="form-label">Grout Category</label>
+                            <select class="form-select" id="groutTier">
+                                <option value="mosaic">Mosaic / Small - 3 bags/100sqft</option>
+                                <option value="small">Small Tile 4x4-6x6 - 2 bags/100sqft</option>
+                                <option value="standard" selected>Standard/Large 12x12+ - 1 bag/100sqft</option>
+                            </select>
+                            <div class="form-text">Auto-selected from tile size but you can override</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveRoomBtn">Add Room</button>
-                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary"
+                        id="saveRoomBtn">Add Room</button></div>
             </div>
         </div>
     </div>
