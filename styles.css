@@ -1,3 +1,5 @@
+/* styles.css - Perry's Tiling Quote Engine v3.3.6 - Dark-First Theme */
+
 :root {
     --bg-color: #1a1a1a;
     --card-bg: #2a2a2a;
@@ -11,7 +13,8 @@
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
-    font-family: system-ui, sans-serif;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body:not(.dark-mode) {
@@ -23,16 +26,35 @@ body:not(.dark-mode) {
     --placeholder-color: #6c757d;
 }
 
+.container-fluid {
+    max-width: 1600px;
+}
+
+/* Cards */
 .card {
     background-color: var(--card-bg);
     border-color: var(--border-color);
     color: var(--text-color);
+    border-radius: 0.5rem;
 }
 
+.card-header {
+    background-color: transparent!important;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.card-footer {
+    background-color: transparent!important;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Forms */
 .form-control, .form-select {
     background-color: var(--card-bg);
     border-color: var(--border-color);
     color: var(--text-color);
+    border-radius: 0.375rem;
 }
 
 .form-control:focus, .form-select:focus {
@@ -42,18 +64,41 @@ body:not(.dark-mode) {
     box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
 }
 
-/* FIX 1: Placeholder text visible in dark mode */
 .form-control::placeholder {
     color: var(--placeholder-color);
     opacity: 1;
 }
 
-/* FIX 2: Labels and small text visible in dark mode */
 .form-label, .form-text, .text-muted {
-    color: var(--muted-color) !important;
+    color: var(--muted-color)!important;
 }
 
-/* FIX 3: Dropdown items in dark mode */
+.form-control-sm, .form-select-sm {
+    font-size: 0.85rem;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #157347;
+    border-color: #146c43;
+}
+
+.btn-outline-primary {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+/* Dropdown */
 body.dark-mode .dropdown-menu {
     background-color: var(--card-bg);
     border-color: var(--border-color);
@@ -68,6 +113,13 @@ body.dark-mode .dropdown-item:hover {
     color: var(--text-color);
 }
 
+.dropdown-menu {
+    border-radius: 0.375rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Stat Boxes */
 .stat-box {
     background: rgba(0,0,0,0.2);
     padding: 1rem;
@@ -76,25 +128,61 @@ body.dark-mode .dropdown-item:hover {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    border: 1px solid var(--border-color);
 }
 
 body:not(.dark-mode) .stat-box {
     background: rgba(0,0,0,0.05);
 }
 
+/* Total Area Banner - Always high contrast for print */
 .total-area-banner {
     background-color: #f8f9fa!important;
     color: #000!important;
     border: 2px solid #000!important;
 }
 
-.total-area-banner span, .total-area-banner.h4 { color: #000!important; }
+.total-area-banner span, .total-area-banner.h4 { 
+    color: #000!important; 
+}
 
-.room-card { border-left: 4px solid var(--accent); }
-.saved-quote-item { cursor: pointer; }
-.saved-quote-item:hover { background-color: rgba(255,255,255,0.05); }
+/* Room Cards */
+.room-card { 
+    border-left: 4px solid var(--accent);
+    transition: box-shadow 0.2s ease;
+}
 
-/* FIX 4: Modals in dark mode */
+.room-card:hover {
+    box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.3);
+}
+
+.room-name {
+    border: none;
+    background: transparent;
+    padding: 0;
+}
+
+.room-name:focus {
+    background: var(--card-bg);
+    border: 1px solid var(--accent);
+    padding: 0.25rem 0.5rem;
+}
+
+/* Saved Quotes */
+.saved-quote-item { 
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.saved-quote-item:hover { 
+    background-color: rgba(255,255,255,0.05); 
+}
+
+body:not(.dark-mode) .saved-quote-item:hover {
+    background-color: rgba(0,0,0,0.05);
+}
+
+/* Modals */
 body.dark-mode .modal-content {
     background-color: var(--card-bg);
     color: var(--text-color);
@@ -112,26 +200,95 @@ body.dark-mode .btn-close {
     filter: invert(1) grayscale(100%) brightness(200%);
 }
 
-/* FIX 5: List group items in dark mode */
+/* List Groups */
 body.dark-mode .list-group-item {
     background-color: var(--card-bg);
     border-color: var(--border-color);
     color: var(--text-color);
 }
 
-/* FIX 6: Alerts in dark mode */
+/* Alerts */
 body.dark-mode .alert-info {
     background-color: rgba(13, 202, 240, 0.1);
     border-color: rgba(13, 202, 240, 0.2);
     color: #9eeaf9;
 }
 
+body.dark-mode .alert-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-color: rgba(255, 193, 7, 0.2);
+    color: #ffda6a;
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
+}
+
+/* Phone Input */
+#customerPhone {
+    font-family: monospace;
+    letter-spacing: 0.05em;
+}
+
+/* Client Info Box */
+#clientInfo {
+    background-color: rgba(25, 135, 84, 0.1)!important;
+    border-color: var(--accent)!important;
+}
+
+body:not(.dark-mode) #clientInfo {
+    background-color: rgba(25, 135, 84, 0.08)!important;
+}
+
+/* Empty State */
+#emptyState {
+    border-style: dashed!important;
+    border-width: 2px!important;
+}
+
+/* Sticky Sidebar Fix */
+.sticky-top {
+    position: sticky;
+}
+
+/* Toast */
+.toast {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+   .sticky-top {
+        position: relative!important;
+        top: auto!important;
+    }
+   .col-lg-5 {
+        margin-top: 1.5rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+   .card-body {
+        padding: 0.75rem;
+    }
+   .h4 {
+        font-size: 1.25rem;
+    }
+   .h3 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Print Styles */
 @media print {
    .col-lg-7 { display: none!important; }
    .col-lg-5 { width: 100%!important; max-width: 100%!important; flex: 0 0 100%!important; }
    .card { border: none!important; box-shadow: none!important; }
    .sticky-top { position: static!important; }
-   .btn, .modal { display: none!important; }
+   .btn, .modal, #themeToggle, #clearAllBtn { display: none!important; }
    .total-area-banner {
         background-color: #fff!important;
         color: #000!important;
@@ -141,4 +298,13 @@ body.dark-mode .alert-info {
     }
    .total-area-banner span, .total-area-banner.h4 { color: #000!important; }
     @page { margin: 0.5in; }
+    
+    body {
+        background: #fff!important;
+        color: #000!important;
+    }
+   .card, .list-group-item {
+        background: #fff!important;
+        color: #000!important;
+    }
 }
