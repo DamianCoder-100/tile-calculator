@@ -1,0 +1,144 @@
+:root {
+    --bg-color: #1a1a1a;
+    --card-bg: #2a2a2a;
+    --text-color: #f8f9fa;
+    --border-color: #444;
+    --accent: #198754;
+    --muted-color: #adb5bd;
+    --placeholder-color: #6c757d;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: system-ui, sans-serif;
+}
+
+body:not(.dark-mode) {
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-color: #212529;
+    --border-color: #dee2e6;
+    --muted-color: #6c757d;
+    --placeholder-color: #6c757d;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.form-control, .form-select {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--card-bg);
+    border-color: var(--accent);
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
+
+/* FIX 1: Placeholder text visible in dark mode */
+.form-control::placeholder {
+    color: var(--placeholder-color);
+    opacity: 1;
+}
+
+/* FIX 2: Labels and small text visible in dark mode */
+.form-label, .form-text, .text-muted {
+    color: var(--muted-color) !important;
+}
+
+/* FIX 3: Dropdown items in dark mode */
+body.dark-mode .dropdown-menu {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .dropdown-item {
+    color: var(--text-color);
+}
+
+body.dark-mode .dropdown-item:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: var(--text-color);
+}
+
+.stat-box {
+    background: rgba(0,0,0,0.2);
+    padding: 1rem;
+    border-radius: 8px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+body:not(.dark-mode) .stat-box {
+    background: rgba(0,0,0,0.05);
+}
+
+.total-area-banner {
+    background-color: #f8f9fa!important;
+    color: #000!important;
+    border: 2px solid #000!important;
+}
+
+.total-area-banner span, .total-area-banner.h4 { color: #000!important; }
+
+.room-card { border-left: 4px solid var(--accent); }
+.saved-quote-item { cursor: pointer; }
+.saved-quote-item:hover { background-color: rgba(255,255,255,0.05); }
+
+/* FIX 4: Modals in dark mode */
+body.dark-mode .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+}
+
+body.dark-mode .modal-header {
+    border-bottom-color: var(--border-color);
+}
+
+body.dark-mode .modal-footer {
+    border-top-color: var(--border-color);
+}
+
+body.dark-mode .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* FIX 5: List group items in dark mode */
+body.dark-mode .list-group-item {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+/* FIX 6: Alerts in dark mode */
+body.dark-mode .alert-info {
+    background-color: rgba(13, 202, 240, 0.1);
+    border-color: rgba(13, 202, 240, 0.2);
+    color: #9eeaf9;
+}
+
+@media print {
+   .col-lg-7 { display: none!important; }
+   .col-lg-5 { width: 100%!important; max-width: 100%!important; flex: 0 0 100%!important; }
+   .card { border: none!important; box-shadow: none!important; }
+   .sticky-top { position: static!important; }
+   .btn, .modal { display: none!important; }
+   .total-area-banner {
+        background-color: #fff!important;
+        color: #000!important;
+        border: 2px solid #000!important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+   .total-area-banner span, .total-area-banner.h4 { color: #000!important; }
+    @page { margin: 0.5in; }
+}
