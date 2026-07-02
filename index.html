@@ -85,19 +85,19 @@
                     <div class="card-header">Tile Information</div>
                     <div class="card-body">
                         <div class="row g-2 mb-2">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label small text-muted mb-1">Box Coverage (sqft)</label>
                                 <input type="number" step="0.1" class="form-control" id="tileBoxCoverage"
                                     placeholder="10">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label small text-muted mb-1">Mortar Type</label>
                                 <select class="form-select" id="mortarType">
                                     <option value="thinset" selected>Thinset Only</option>
                                     <option value="cement">Cement/Sand Mix</option>
                                 </select>
                             </div>
-                            <div class="col-md-4" id="trowelSection">
+                            <div class="col-md-3" id="trowelSection">
                                 <label class="form-label small text-muted mb-1">Trowel Size</label>
                                 <select class="form-select" id="trowelSize">
                                     <option value="80">1/4" x 1/4" - 80 sqft/bag</option>
@@ -106,9 +106,16 @@
                                     <option value="40">3/4" - 40 sqft/bag</option>
                                 </select>
                             </div>
+                            <div class="col-md-3">
+                                <label class="form-label small text-muted mb-1">Joint Width</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.001" class="form-control" id="jointWidth" value="0.125" placeholder="0.125">
+                                    <span class="input-group-text">in</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="alert alert-info small mb-0">
-                            <i class="bi bi-info-circle"></i> Perry Mode: Grout = Total Floor + Total Wall ÷ 100. No joint math needed.
+                            <i class="bi bi-info-circle"></i> Grout coverage adjusts automatically from the selected joint width.
                         </div>
                     </div>
                 </div>
@@ -193,6 +200,9 @@
             <div class="col-lg-5">
                 <div class="card sticky-top" style="top: 1rem;">
                     <div class="card-body">
+                        <div class="print-logo mb-3 text-center">
+                            <img src="perry-logo2026.png" alt="Perry's Tiling" class="img-fluid" style="max-height: 70px; width: auto;">
+                        </div>
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h5 class="mb-0"><i class="bi bi-clipboard-data"></i> Material Estimate</h5>
                             <span class="small text-muted" id="estimateDate"></span>
@@ -372,8 +382,10 @@
                         </div>
                     </div>
 
+                    <input type="hidden" id="activeRoomType" value="">
+
                     <!-- Dimensions: Generic Dim1 x Dim2 -->
-                    <div class="row g-2 mb-2">
+                    <div id="standardRoomDimensions" class="row g-2 mb-2">
                         <div class="col-md-6">
                             <label class="form-label">Length/Height (ft)</label>
                             <input type="number" class="form-control" id="roomDim1" step="0.1" min="0" placeholder="Floor: Length, Wall: Height">
@@ -381,6 +393,68 @@
                         <div class="col-md-6">
                             <label class="form-label">Width (ft)</label>
                             <input type="number" class="form-control" id="roomDim2" step="0.1" min="0" placeholder="Width">
+                        </div>
+                    </div>
+
+                    <div id="stairCalculatorSection" class="card border-secondary-subtle d-none mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Stair Calculator</h6>
+                                <span class="badge bg-info-subtle text-info-emphasis">Area Only</span>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Number of Steps</label>
+                                    <input type="number" class="form-control" id="stairSteps" step="1" min="1" inputmode="numeric">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Stair Width (ft)</label>
+                                    <input type="number" class="form-control" id="stairWidth" step="0.1" min="0.01">
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tread Depth</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="stairTreadDepth" step="0.1" min="0.01">
+                                        <select class="form-select" id="stairTreadUnit" style="max-width: 80px;">
+                                            <option value="ft">ft</option>
+                                            <option value="in">in</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Riser Height</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="stairRiserHeight" step="0.1" min="0.01">
+                                        <select class="form-select" id="stairRiserUnit" style="max-width: 80px;">
+                                            <option value="ft">ft</option>
+                                            <option value="in">in</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-4">
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" id="stairIncludeRisers" checked>
+                                        <label class="form-check-label" for="stairIncludeRisers">Include Risers</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Landing Length (ft)</label>
+                                    <input type="number" class="form-control" id="stairLandingLength" step="0.1" min="0.01">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Landing Width (ft)</label>
+                                    <input type="number" class="form-control" id="stairLandingWidth" step="0.1" min="0.01">
+                                </div>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="stairIncludeLanding">
+                                <label class="form-check-label" for="stairIncludeLanding">Include Landing</label>
+                            </div>
+                            <div id="stairCalcSummary" class="alert alert-light small mb-0"></div>
                         </div>
                     </div>
 

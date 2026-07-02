@@ -122,17 +122,44 @@ body.dark-mode .dropdown-item:hover {
 /* Stat Boxes */
 .stat-box {
     background: rgba(0,0,0,0.2);
-    padding: 1rem;
-    border-radius: 8px;
+    padding: 0.55rem 0.5rem;
+    border-radius: 6px;
     height: 100%;
+    min-height: 72px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     border: 1px solid var(--border-color);
 }
 
+.stat-box .h3 {
+    font-size: 1rem;
+    line-height: 1.1;
+    margin-bottom: 0.15rem;
+}
+
+.stat-box .small {
+    font-size: 0.7rem;
+    line-height: 1.1;
+}
+
 body:not(.dark-mode) .stat-box {
     background: rgba(0,0,0,0.05);
+}
+
+@media print {
+    .stat-box {
+        padding: 0.35rem 0.4rem;
+        min-height: 58px;
+    }
+
+    .stat-box .h3 {
+        font-size: 0.95rem;
+    }
+
+    .stat-box .small {
+        font-size: 0.65rem;
+    }
 }
 
 /* Total Area Banner - Always high contrast for print */
@@ -154,6 +181,22 @@ body:not(.dark-mode) .stat-box {
 
 .room-card:hover {
     box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.3);
+}
+
+.room-card.dragging {
+    opacity: 0.6;
+    cursor: grabbing;
+}
+
+.room-card.drop-target {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.2);
+}
+
+.drag-handle {
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
 }
 
 .room-name {
@@ -282,8 +325,14 @@ body:not(.dark-mode) #clientInfo {
     }
 }
 
+/* Print logo */
+.print-logo {
+    display: none;
+}
+
 /* Print Styles */
 @media print {
+   .print-logo { display: block!important; }
    .col-lg-7 { display: none!important; }
    .col-lg-5 { width: 100%!important; max-width: 100%!important; flex: 0 0 100%!important; }
    .card { border: none!important; box-shadow: none!important; }
