@@ -1300,44 +1300,50 @@ function bindEvents() {
         touchReorderState = null;
     });
 
-    DOM.roomsContainer?.addEventListener('pointerdown', (e) => {
+    DOM.roomsContainer?.addEventListener('touchstart', (e) => {
         const handle = e.target.closest('.drag-handle');
-        if (!handle || (e.pointerType !== 'touch' && e.pointerType !== 'pen')) return;
+        if (!handle) return;
         const card = handle.closest('.room-card');
         if (!card) return;
+        const touch = e.touches[0];
+        if (!touch) return;
         e.preventDefault();
         e.stopPropagation();
         draggedRoomId = parseInt(card.dataset.roomId, 10);
         touchReorderState = {
             roomId: draggedRoomId,
-            pointerId: e.pointerId,
-            startX: e.clientX,
-            startY: e.clientY,
+            pointerId: touch.identifier,
+            startX: touch.clientX,
+            startY: touch.clientY,
             moved: false,
             targetRoomId: null
         };
         card.classList.add('dragging');
-    });
+    }, { passive: false });
 
-    DOM.roomsContainer?.addEventListener('pointermove', (e) => {
-        if (!touchReorderState || touchReorderState.pointerId !== e.pointerId) return;
-        const dx = e.clientX - touchReorderState.startX;
-        const dy = e.clientY - touchReorderState.startY;
+    DOM.roomsContainer?.addEventListener('touchmove', (e) => {
+        if (!touchReorderState) return;
+        const touch = Array.from(e.touches).find(t => t.identifier === touchReorderState.pointerId);
+        if (!touch) return;
+        const dx = touch.clientX - touchReorderState.startX;
+        const dy = touch.clientY - touchReorderState.startY;
         if (!touchReorderState.moved && Math.hypot(dx, dy) < 8) return;
         touchReorderState.moved = true;
         e.preventDefault();
         clearRoomDropTargets();
-        const targetCard = document.elementFromPoint(e.clientX, e.clientY)?.closest('.room-card');
+        const targetCard = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.room-card');
         if (targetCard) {
             touchReorderState.targetRoomId = parseInt(targetCard.dataset.roomId, 10);
             if (touchReorderState.targetRoomId !== draggedRoomId) {
                 targetCard.classList.add('drop-target');
             }
         }
-    });
+    }, { passive: false });
 
-    DOM.roomsContainer?.addEventListener('pointerup', (e) => {
-        if (!touchReorderState || touchReorderState.pointerId !== e.pointerId) return;
+    DOM.roomsContainer?.addEventListener('touchend', (e) => {
+        if (!touchReorderState) return;
+        const touch = Array.from(e.changedTouches).find(t => t.identifier === touchReorderState.pointerId);
+        if (!touch) return;
         if (touchReorderState.moved) {
             finishRoomReorder(touchReorderState.targetRoomId);
         } else {
@@ -1348,7 +1354,7 @@ function bindEvents() {
         }
     });
 
-    DOM.roomsContainer?.addEventListener('pointercancel', () => {
+    DOM.roomsContainer?.addEventListener('touchcancel', () => {
         clearRoomDropTargets();
         DOM.roomsContainer?.querySelectorAll('.room-card').forEach(el => el.classList.remove('dragging'));
         draggedRoomId = null;
