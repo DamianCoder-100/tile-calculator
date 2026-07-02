@@ -1,4 +1,4 @@
-const CACHE_NAME = "tile-calculator-v2";
+const CACHE_NAME = "tile-calculator-v3";
 
 const FILES_TO_CACHE = [
   "./",

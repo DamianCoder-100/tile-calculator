@@ -7,9 +7,11 @@
     <title>Perry's Tiling Quote</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <link rel="stylesheet" href="styles.css">
     <meta name="theme-color" content="#2c3e50">
     <link rel="manifest" href="manifest.json">
+ <link rel="icon" type="image/png" href="tile_calc_img.png">
+<link rel="shortcut icon" href="tile_calc_img.png">
 </head>
 
 <body>
@@ -18,32 +20,33 @@
             <!-- Left Column: Form -->
             <div class="col-lg-7">
 
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
-    <div>
-        <img src="perry-logo2026.png" alt="Perry's Tiling" class="img-fluid d-block mb-2"
-            style="max-height: 70px; width:auto">
-        <div class="d-flex gap-2 flex-wrap">
-            <span id="quoteMode" class="badge bg-secondary">New Quote</span>
-            <span class="badge bg-secondary" id="quoteDate"></span>
-        </div>
-    </div>
-    <div class="d-flex gap-2 align-self-stretch align-self-md-center">
-        <button id="themeToggle" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-moon-stars" id="themeIcon"></i>
-        </button>
-        <button id="clearAllBtn" class="btn btn-outline-danger btn-sm">
-            <i class="bi bi-trash"></i> Clear All
-        </button>
-    </div>
-</div>
+                <div
+                    class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
+                    <div>
+                        <img src="perry-logo2026.png" alt="Perry's Tiling" class="img-fluid d-block mb-2"
+                            style="max-height: 70px; width:auto">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <span id="quoteMode" class="badge bg-secondary">New Quote</span>
+                            <span class="badge bg-secondary" id="quoteDate"></span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 align-self-stretch align-self-md-center">
+                        <button id="themeToggle" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-moon-stars" id="themeIcon"></i>
+                        </button>
+                        <button id="clearAllBtn" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Client Information -->
                 <div class="card mb-3">
                     <div class="card-header">Client Information</div>
                     <div class="card-body">
                         <input type="text" class="form-control mb-2" id="customerName" placeholder="Client Name">
-                        <input type="tel" id="customerPhone" class="form-control mb-2"
-                            placeholder="(876) 777-7777" maxlength="14" />
+                        <input type="tel" id="customerPhone" class="form-control mb-2" placeholder="(876) 777-7777"
+                            maxlength="14" />
                         <input type="text" class="form-control mb-2" id="customerAddress" placeholder="Job Address">
                         <textarea class="form-control" id="notes" rows="2"
                             placeholder="Job notes - tile type, style, start time"></textarea>
@@ -111,53 +114,55 @@
                             <div class="col-md-3">
                                 <label class="form-label small text-muted mb-1">Joint Width</label>
                                 <div class="input-group">
-                                    <input type="number" step="0.001" class="form-control" id="jointWidth" value="0.125" placeholder="0.125">
+                                    <input type="number" step="0.001" class="form-control" id="jointWidth" value="0.125"
+                                        placeholder="0.125">
                                     <span class="input-group-text">in</span>
                                 </div>
                             </div>
                         </div>
                         <div class="alert alert-info small mb-0">
-                            <i class="bi bi-info-circle"></i> Grout coverage adjusts automatically from the selected joint width.
+                            <i class="bi bi-info-circle"></i> Grout coverage adjusts automatically from the selected
+                            joint width.
                         </div>
                     </div>
                 </div>
 
-    
-<!-- Extra Services - Full Width Button Header -->
-<div class="card mb-3">
-    <div class="card-header p-0">
-        <div class="dropdown">
-            <button class="btn btn-primary w-100 rounded-0 rounded-top dropdown-toggle py-2" 
-                    type="button" 
-                    data-bs-toggle="dropdown" 
-                    data-bs-auto-close="outside"
-                    aria-expanded="false">
-                <i class="bi bi-plus-circle me-2"></i>Add Extra Service & Prep Work
-            </button>
-            <ul class="dropdown-menu w-100 shadow-lg" id="extraServicesMenu" style="min-width: 100%;">
-                <!-- JS populates preset services here -->
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-center fw-bold py-2" href="#" id="addCustomExtraBtn">
-                    <i class="bi bi-plus"></i> Custom Service
-                </a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="card-body p-2">
-        <!-- Column Labels - hide on mobile, show on md+ -->
-        <div class="row g-2 mb-2 d-none d-md-flex small text-muted fw-bold px-1">
-            <div class="col-md-4">Service</div>
-            <div class="col-md-2">Qty</div>
-            <div class="col-md-2">Amount</div>
-            <div class="col-md-2">Unit</div>
-            <div class="col-md-1 text-end">Total</div>
-            <div class="col-md-1"></div>
-        </div>
-        <div id="extrasContainer">
-            <p class="text-muted text-center mb-0">No extras added</p>
-        </div>
-    </div>
-</div>
+
+                <!-- Extra Services - Full Width Button Header -->
+                <div class="card mb-3">
+                    <div class="card-header p-0">
+                        <div class="dropdown">
+                            <button class="btn btn-primary w-100 rounded-0 rounded-top dropdown-toggle py-2"
+                                type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                aria-expanded="false">
+                                <i class="bi bi-plus-circle me-2"></i>Add Extra Service & Prep Work
+                            </button>
+                            <ul class="dropdown-menu w-100 shadow-lg" id="extraServicesMenu" style="min-width: 100%;">
+                                <!-- JS populates preset services here -->
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item text-center fw-bold py-2" href="#" id="addCustomExtraBtn">
+                                        <i class="bi bi-plus"></i> Custom Service
+                                    </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body p-2">
+                        <!-- Column Labels - hide on mobile, show on md+ -->
+                        <div class="row g-2 mb-2 d-none d-md-flex small text-muted fw-bold px-1">
+                            <div class="col-md-4">Service</div>
+                            <div class="col-md-2">Qty</div>
+                            <div class="col-md-2">Amount</div>
+                            <div class="col-md-2">Unit</div>
+                            <div class="col-md-1 text-end">Total</div>
+                            <div class="col-md-1"></div>
+                        </div>
+                        <div id="extrasContainer">
+                            <p class="text-muted text-center mb-0">No extras added</p>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Labor & Pricing -->
                 <div class="card mb-3">
@@ -203,7 +208,8 @@
                 <div class="card sticky-top" style="top: 1rem;">
                     <div class="card-body">
                         <div class="print-logo mb-3 text-center">
-                            <img src="perry-logo2026.png" alt="Perry's Tiling" class="img-fluid" style="max-height: 70px; width: auto;">
+                            <img src="perry-logo2026.png" alt="Perry's Tiling" class="img-fluid"
+                                style="max-height: 70px; width: auto;">
                         </div>
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h5 class="mb-0"><i class="bi bi-clipboard-data"></i> Material Estimate</h5>
@@ -368,12 +374,13 @@
                         <label class="form-label">Room/Area Name</label>
                         <input type="text" class="form-control" id="roomName" placeholder="Living Room">
                     </div>
-                    
+
                     <!-- Surface Type Toggle -->
                     <div class="mb-3">
                         <label class="form-label">Surface Type</label>
                         <div class="btn-group w-100" role="group">
-                            <input type="radio" class="btn-check" name="surfaceType" id="surfaceFloor" value="floor" checked>
+                            <input type="radio" class="btn-check" name="surfaceType" id="surfaceFloor" value="floor"
+                                checked>
                             <label class="btn btn-outline-primary" for="surfaceFloor">
                                 <i class="bi bi-square"></i> Floor
                             </label>
@@ -381,7 +388,8 @@
                             <label class="btn btn-outline-primary" for="surfaceWall">
                                 <i class="bi bi-border-width"></i> Wall
                             </label>
-                            <input type="radio" class="btn-check" name="surfaceType" id="surfaceCountertop" value="countertop">
+                            <input type="radio" class="btn-check" name="surfaceType" id="surfaceCountertop"
+                                value="countertop">
                             <label class="btn btn-outline-primary" for="surfaceCountertop">
                                 <i class="bi bi-columns-gap"></i> Countertop
                             </label>
@@ -394,11 +402,13 @@
                     <div id="standardRoomDimensions" class="row g-2 mb-2">
                         <div class="col-md-6">
                             <label class="form-label">Length/Height (ft)</label>
-                            <input type="number" class="form-control" id="roomDim1" step="0.1" min="0" placeholder="Floor: Length, Wall: Height">
+                            <input type="number" class="form-control" id="roomDim1" step="0.1" min="0"
+                                placeholder="Floor: Length, Wall: Height">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Width (ft)</label>
-                            <input type="number" class="form-control" id="roomDim2" step="0.1" min="0" placeholder="Width">
+                            <input type="number" class="form-control" id="roomDim2" step="0.1" min="0"
+                                placeholder="Width">
                         </div>
                     </div>
 
@@ -411,7 +421,8 @@
                             <div class="row g-2 mb-2">
                                 <div class="col-md-6">
                                     <label class="form-label">Number of Steps</label>
-                                    <input type="number" class="form-control" id="stairSteps" step="1" min="1" inputmode="numeric">
+                                    <input type="number" class="form-control" id="stairSteps" step="1" min="1"
+                                        inputmode="numeric">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Stair Width (ft)</label>
@@ -422,7 +433,8 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Tread Depth</label>
                                     <div class="input-group">
-                                        <input type="number" class="form-control" id="stairTreadDepth" step="0.1" min="0.01">
+                                        <input type="number" class="form-control" id="stairTreadDepth" step="0.1"
+                                            min="0.01">
                                         <select class="form-select" id="stairTreadUnit" style="max-width: 80px;">
                                             <option value="ft">ft</option>
                                             <option value="in">in</option>
@@ -432,7 +444,8 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Riser Height</label>
                                     <div class="input-group">
-                                        <input type="number" class="form-control" id="stairRiserHeight" step="0.1" min="0.01">
+                                        <input type="number" class="form-control" id="stairRiserHeight" step="0.1"
+                                            min="0.01">
                                         <select class="form-select" id="stairRiserUnit" style="max-width: 80px;">
                                             <option value="ft">ft</option>
                                             <option value="in">in</option>
@@ -449,11 +462,13 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Landing Length (ft)</label>
-                                    <input type="number" class="form-control" id="stairLandingLength" step="0.1" min="0.01">
+                                    <input type="number" class="form-control" id="stairLandingLength" step="0.1"
+                                        min="0.01">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Landing Width (ft)</label>
-                                    <input type="number" class="form-control" id="stairLandingWidth" step="0.1" min="0.01">
+                                    <input type="number" class="form-control" id="stairLandingWidth" step="0.1"
+                                        min="0.01">
                                 </div>
                             </div>
                             <div class="form-check mb-2">
@@ -466,7 +481,8 @@
 
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="isHeight">
-                        <label class="form-check-label" for="isHeight">Add height adder for tall walls +J$60/sqft</label>
+                        <label class="form-check-label" for="isHeight">Add height adder for tall walls
+                            +J$60/sqft</label>
                     </div>
 
                     <div class="row g-2 mb-2">
@@ -509,15 +525,15 @@
 
     <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script type="module" src="main.js"></script>
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js");
-  });
-}
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="main.js"></script>
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("./service-worker.js");
+            });
+        }
+    </script>
 </body>
 
 </html>
