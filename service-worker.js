@@ -1,4 +1,4 @@
-const CACHE_NAME = "tile-calculator-v1";
+const CACHE_NAME = "tile-calculator-v2";
 
 const FILES_TO_CACHE = [
   "./",
@@ -7,8 +7,7 @@ const FILES_TO_CACHE = [
   "./main.js",
   "./save.js",
   "./manifest.json",
-  "images/tile_pro_logo.jpeg",
-  "images/tile_pro_logo.png"
+  "perry-logo2026.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -17,10 +16,14 @@ self.addEventListener("install", (event) => {
   );
 });
 
-self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((key) => key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      )
+    )
   );
 });
