@@ -37,13 +37,13 @@ const PATTERNS = {
 const TROWEL_COVERAGE = {'80': 80, '60': 60, '50': 50, '40': 40};
 
 const TILE_PROFILES = {
-    '3x6': { label: '3x6 Subway' },
-    '6x24': { label: '6x24 Plank' },
-    '12x12': { label: '12x12' },
-    '12x24': { label: '12x24' },
-    '24x24': { label: '24x24' },
-    '24x48': { label: '24x48 Large Format' },
-    'mosaic': { label: 'Mosaic Sheet' }
+    '3x6': { label: '3x6 Subway', length: 3, width: 6, thickness: 0.25 },
+    '6x24': { label: '6x24 Plank', length: 6, width: 24, thickness: 0.375 },
+    '12x12': { label: '12x12', length: 12, width: 12, thickness: 0.375 },
+    '12x24': { label: '12x24', length: 12, width: 24, thickness: 0.375 },
+    '24x24': { label: '24x24', length: 24, width: 24, thickness: 0.375 },
+    '24x48': { label: '24x48 Large Format', length: 24, width: 48, thickness: 0.375 },
+    'mosaic': { label: 'Mosaic Sheet', length: 12, width: 12, thickness: 0.25 }
 };
 
 const ROOM_TYPES = [
@@ -92,6 +92,7 @@ const TILE_TYPE_LABELS = {
 };
 
 const GROUT_BAG_COVERAGE = 100;
+const DEFAULT_TILE_THICKNESS = 0.375;
 
 let state = {
     customerName: '', customerPhone: '', customerAddress: '', notes: '',
@@ -272,6 +273,16 @@ function showToast(msg, delay = 3000, type = 'success') {
 
 function debounce(func, wait = 300) { let t; return function(...args) { clearTimeout(t); t = setTimeout(() => func(...args), wait); }; }
 
+function getTileSpecs(room, customState = state) {
+    const profileKey = room?.tileProfile || '12x24';
+    const profile = TILE_PROFILES[profileKey] || TILE_PROFILES['12x24'] || {};
+    return {
+        tileLength: Math.max(0.001, parseNumber(profile.length) || 12),
+        tileWidth: Math.max(0.001, parseNumber(profile.width) || 12),
+        tileThickness: Math.max(0.001, parseNumber(room?.tileThickness) || parseNumber(profile.thickness) || parseNumber(customState?.tileThickness) || DEFAULT_TILE_THICKNESS)
+    };
+}
+
 function cloneStateForStorage(value) {
     try {
         return structuredClone(value);
@@ -281,10 +292,48 @@ function cloneStateForStorage(value) {
 }
 
 function getGroutCoveragePerBag(customState = state) {
-    const baseCoverage = Math.max(1, parseNumber(GROUT_BAG_COVERAGE) || 100);
+    const baseCoverage = Math.max(1, parseNumber(customState?.groutCoveragePerBag) || parseNumber(GROUT_BAG_COVERAGE) || 100);
     const jointWidth = parseNumber(customState?.jointWidth) || 0.125;
     const safeJointWidth = Math.max(0.001, jointWidth);
     return safe(baseCoverage * (0.125 / safeJointWidth));
+}
+
+function calculateRoomGrout(room, customState = state) {
+    const roomArea = Math.max(0, getRoomArea(room));
+    if (roomArea <= 0) {
+        return { exactGroutBags: 0, groutBags: 0, groutCoverageUsed: getGroutCoveragePerBag(customState), geometryFactor: 0 };
+    }
+
+    const { tileLength, tileWidth, tileThickness } = getTileSpecs(room, customState);
+    const jointWidth = Math.max(0.001, parseNumber(customState?.jointWidth) || 0.125);
+
+    const baseTileLength = 12;
+    const baseTileWidth = 12;
+    const baseJointLengthPerSqFt = 144 * (baseTileLength + baseTileWidth) / (baseTileLength * baseTileWidth);
+    const jointLengthPerSqFt = 144 * (tileLength + tileWidth) / (tileLength * tileWidth);
+    const thicknessFactor = tileThickness / DEFAULT_TILE_THICKNESS;
+    const widthFactor = jointWidth / 0.125;
+    const geometryFactor = safe((jointLengthPerSqFt / baseJointLengthPerSqFt) * thicknessFactor * widthFactor);
+    const groutCoverage = getGroutCoveragePerBag(customState);
+    const exactGroutBags = safe((roomArea * geometryFactor) / groutCoverage);
+
+    return {
+        exactGroutBags: safe(exactGroutBags),
+        groutBags: Math.ceil(Math.max(0, exactGroutBags)),
+        groutCoverageUsed: safe(groutCoverage),
+        geometryFactor,
+        roomArea
+    };
+}
+
+function syncRoomGroutRequirements(customState = state) {
+    (customState.rooms || []).forEach(room => {
+        const grout = calculateRoomGrout(room, customState);
+        room.groutExact = safe(grout.exactGroutBags);
+        room.groutBags = Math.max(0, grout.groutBags);
+        room.groutCoverageUsed = safe(grout.groutCoverageUsed);
+    });
+    return customState.rooms;
 }
 
 function calculateEstimate(customState = state) {
@@ -294,11 +343,14 @@ function calculateEstimate(customState = state) {
     let totalFloorArea = 0;
     let totalWallArea = 0;
     let exactThinsetBagsTotal = 0;
+    let exactGroutBagsTotal = 0;
     let totalProjectBoxesCount = 0;
 
     const roomBreakdown = [];
     const globalWasteFactor = parseNumber(waste) / 100;
     const safeBoxCov = Math.max(1, parseNumber(tileBoxCoverage) || 10);
+
+    syncRoomGroutRequirements(customState);
 
     rooms.forEach(room => {
         const d1 = parseNumber(room.dim1);
@@ -308,11 +360,12 @@ function calculateEstimate(customState = state) {
 
         const surfaceTypeValue = (room.surfaceType || 'floor').toString().toLowerCase();
         const isWall = surfaceTypeValue === 'wall';
-        if (isWall) totalWallArea += baseArea;
+        const isCountertop = surfaceTypeValue === 'countertop';
+        if (isWall || isCountertop) totalWallArea += baseArea;
         else totalFloorArea += baseArea;
 
         const tileType = room.tileType || 'ceramic';
-        const defaultRate = isWall? (TILE_RATES[tileType]?.wall || 200) : (TILE_RATES[tileType]?.floor || 180);
+        const defaultRate = isWall || isCountertop ? (TILE_RATES[tileType]?.wall || 200) : (TILE_RATES[tileType]?.floor || 180);
         const baseRate = parseNumber(room.customRate) > 0? parseNumber(room.customRate) : defaultRate;
         const patternConfig = PATTERNS[room.pattern] || PATTERNS['straight'];
 
@@ -325,6 +378,9 @@ function calculateEstimate(customState = state) {
         if (isWall) roomThinsetBags *= 1.25;
         exactThinsetBagsTotal += safe(roomThinsetBags);
 
+        const roomGrout = calculateRoomGrout(room, customState);
+        exactGroutBagsTotal += safe(roomGrout.exactGroutBags);
+
         // MATERIALS: use the user-selected waste percentage only, without compounding extra waste.
         const roomAreaWithWaste = baseArea * (1 + globalWasteFactor);
         const roomBoxes = Math.ceil(roomAreaWithWaste / safeBoxCov);
@@ -336,24 +392,24 @@ function calculateEstimate(customState = state) {
             tileProfile: room.tileProfile || '12x24',
             baseArea, rate: baseRate, pattern: patternConfig.name,
             labor: roomLaborTotal, customRate: parseNumber(room.customRate) > 0,
-            boxes: roomBoxes, surfaceType: isWall? 'wall' : 'floor',
+            boxes: roomBoxes, surfaceType: isCountertop ? 'countertop' : (isWall ? 'wall' : 'floor'),
             dim1: d1, dim2: d2, exactThinset: safe(roomThinsetBags),
+            exactGrout: safe(roomGrout.exactGroutBags), groutBags: Math.max(0, roomGrout.groutBags),
             laborMultiplier: patternConfig.laborMultiplier,
             materialWaste: patternConfig.materialWaste
         });
     });
 
-    const totalGroutSqft = safe(totalFloorArea + totalWallArea);
     const groutCoverage = getGroutCoveragePerBag(customState);
     if (!groutCoverage || groutCoverage <= 0) {
         return { error: 'Invalid grout coverage. Check joint width.' };
     }
-    const exactGroutBags = safe(totalGroutSqft / groutCoverage);
+    const exactGroutBags = safe(exactGroutBagsTotal);
     const purchaseGroutBags = Math.ceil(exactGroutBags);
     const applyRoomGrout = (list) => list.map(r => ({
         ...r,
-        exactGrout: safe(r.baseArea / groutCoverage),
-        groutBags: Math.ceil(safe(r.baseArea / groutCoverage))
+        exactGrout: safe(r.exactGrout ?? (r.baseArea / groutCoverage)),
+        groutBags: Math.max(0, parseNumber(r.groutBags) || Math.ceil(safe(r.baseArea / groutCoverage)))
     }));
 
     let extrasTotal = 0;
@@ -402,7 +458,6 @@ function calculateEstimate(customState = state) {
         exactThinsetBags: safe(exactThinsetBagsTotal),
         purchaseThinsetBags,
         exactGroutBags: safe(exactGroutBags), purchaseGroutBags,
-        groutSqftTotal: totalGroutSqft,
         groutCoverageUsed: safe(groutCoverage),
         boxes: totalProjectBoxesCount,
         roomBreakdown: adjustedRoomBreakdown,
@@ -439,6 +494,7 @@ function renderRoomsBreakdown(data) {
         const rateText = r.customRate? `Custom ${formatCurrency(r.rate)}/sqft` : `${formatCurrency(r.rate)}/sqft`;
         const dims = getRoomDisplayDims(r);
         const profileLabel = TILE_PROFILES[r.tileProfile]?.label || r.tileProfile;
+        const surfaceBadgeClass = r.surfaceType === 'wall' ? 'bg-info' : (r.surfaceType === 'countertop' ? 'bg-warning text-dark' : 'bg-secondary');
         const laborDisplay = r.originalLabor
       ? `${formatCurrency(r.labor)} <small class="text-muted">(${formatCurrency(r.originalLabor)} before deduction)</small>`
             : formatCurrency(r.labor);
@@ -447,7 +503,7 @@ function renderRoomsBreakdown(data) {
         return `
             <div class="mb-2 pb-2 border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
-                    <div class="fw-bold">${escapeHtml(r.name)} <span class="badge ${r.surfaceType === 'wall'? 'bg-info' : 'bg-secondary'} ms-1">${r.surfaceType}</span></div>
+                    <div class="fw-bold">${escapeHtml(r.name)} <span class="badge ${surfaceBadgeClass} ms-1">${escapeHtml(r.surfaceType || 'floor')}</span></div>
                     <span class="badge bg-primary">${r.boxes} boxes</span>
                 </div>
                 <div class="d-flex justify-content-between small">
@@ -545,6 +601,7 @@ function renderRooms() {
     container.innerHTML = state.rooms.map(room => {
         const normalizedSurfaceType = ((room.surfaceType || 'floor').toString().toLowerCase());
         const isWall = normalizedSurfaceType === 'wall';
+        const isCountertop = normalizedSurfaceType === 'countertop';
         const isStairsRoom = (room.roomType || '').toString().toLowerCase() === 'stairs' || (room.name || '').toString().toLowerCase() === 'stairs';
         const profileLabel = TILE_PROFILES[room.tileProfile]?.label || room.tileProfile || '12x24';
         const dimensionsMarkup = isStairsRoom ? `
@@ -581,8 +638,9 @@ function renderRooms() {
                 <div class="row g-2 align-items-center">
                     <div class="col-4">
                         <select class="form-select form-select-sm room-field fw-bold" data-field="surfaceType">
-                            <option value="floor" ${!isWall? 'selected' : ''}>Floor</option>
-                            <option value="wall" ${isWall? 'selected' : ''}>Wall</option>
+                            <option value="floor" ${!isWall && !isCountertop ? 'selected' : ''}>Floor</option>
+                            <option value="wall" ${isWall ? 'selected' : ''}>Wall</option>
+                            <option value="countertop" ${isCountertop ? 'selected' : ''}>Countertop</option>
                         </select>
                     </div>
                     ${dimensionsMarkup}
@@ -665,6 +723,7 @@ function resetModalForm() {
     const pt = document.getElementById('pattern'); if (pt) pt.value = 'straight';
     const ih = document.getElementById('isHeight'); if (ih) ih.checked = false;
     const surfaceFloor = document.getElementById('surfaceFloor'); if (surfaceFloor) surfaceFloor.checked = true;
+    const surfaceCountertop = document.getElementById('surfaceCountertop'); if (surfaceCountertop) surfaceCountertop.checked = false;
     const stairSteps = document.getElementById('stairSteps'); if (stairSteps) stairSteps.value = '10';
     const stairWidth = document.getElementById('stairWidth'); if (stairWidth) stairWidth.value = '3';
     const stairTreadDepth = document.getElementById('stairTreadDepth'); if (stairTreadDepth) stairTreadDepth.value = '10';
@@ -692,8 +751,12 @@ function loadRoomToModal(room) {
     document.getElementById('isHeight').checked = room.isHeight || false;
     const roomType = room.roomType || (room.name === 'Stairs' ? 'Stairs' : '');
     const activeRoomType = document.getElementById('activeRoomType'); if (activeRoomType) activeRoomType.value = roomType;
-    if (room.surfaceType === 'wall') {
+    const roomTypeLower = (roomType || '').toString().toLowerCase();
+    const surfaceTypeValue = (room.surfaceType || (roomTypeLower.includes('vanity') ? 'countertop' : 'floor')).toString().toLowerCase();
+    if (surfaceTypeValue === 'wall') {
         document.getElementById('surfaceWall').checked = true;
+    } else if (surfaceTypeValue === 'countertop') {
+        document.getElementById('surfaceCountertop').checked = true;
     } else {
         document.getElementById('surfaceFloor').checked = true;
     }
@@ -1030,9 +1093,12 @@ function bindEvents() {
             document.getElementById('roomName').value = roomType;
             const hiddenRoomType = document.getElementById('activeRoomType');
             if (hiddenRoomType) hiddenRoomType.value = roomType;
-            const isWall = roomType.toLowerCase().includes('wall');
-            const sf = document.getElementById('surfaceFloor'); if (sf) sf.checked =!isWall;
+            const roomTypeLower = roomType.toLowerCase();
+            const isWall = roomTypeLower.includes('wall');
+            const isCountertop = roomTypeLower.includes('vanity');
+            const sf = document.getElementById('surfaceFloor'); if (sf) sf.checked = !isWall && !isCountertop;
             const sw = document.getElementById('surfaceWall'); if (sw) sw.checked = isWall;
+            const sc = document.getElementById('surfaceCountertop'); if (sc) sc.checked = isCountertop;
             setRoomModalMode(roomType);
             if (roomModal) roomModal.show();
         });
@@ -1216,7 +1282,7 @@ function bindEvents() {
         msg += `${data.purchaseThinsetBags} ${state.mortarType} bags (${safe(data.exactThinsetBags).toFixed(2)} calculated)\n`;
         msg += `${data.purchaseGroutBags} grout bags (${safe(data.exactGroutBags).toFixed(2)} calculated @ ${safe(data.groutCoverageUsed).toFixed(0)} sqft/bag)\n`;
         msg += ` - Joint Width: ${safe(parseNumber(state.jointWidth) * 8).toFixed(0)}/8"\n`;
-        msg += ` - Total Coverage: ${safe(data.groutSqftTotal).toFixed(1)} sqft\n`;
+        msg += ` - Total Coverage: ${safe(data.groutCoverageUsed).toFixed(0)} sqft/bag\n`;
         msg += ` - Floor: ${safe(data.totalFloorArea).toFixed(1)} sqft | Wall: ${safe(data.totalWallArea).toFixed(1)} sqft\n`;
         msg += `${data.boxes} tile boxes total\n\n`;
         if (state.notes) msg += `Notes: ${state.notes}\n\n`;
