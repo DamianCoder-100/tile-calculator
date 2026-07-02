@@ -127,6 +127,14 @@ function escapeHtml(text) { const div = document.createElement('div'); div.textC
 function parseNumber(value) { const num = parseFloat(value); return isNaN(num)? 0 : num; }
 function safe(n) { return Number.isFinite(n)? n : 0; }
 
+function formatPhoneNumber(value) {
+    const digits = String(value || '').replace(/\D/g, '').slice(0, 10);
+    if (!digits) return '';
+    if (digits.length <= 3) return `(${digits}`;
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
 function convertToFeet(value, unit) {
     const numericValue = parseNumber(value);
     if (numericValue <= 0) return 0;
@@ -1090,18 +1098,7 @@ function bindEvents() {
     const phoneInput = document.getElementById('customerPhone');
     if (phoneInput) {
         phoneInput.addEventListener('input', (e) => {
-            let digits = e.target.value.replace(/\D/g, '');
-            if (digits.length > 10) digits = digits.slice(0, 10);
-
-            let formatted = digits;
-            if (digits.length >= 7) {
-                formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-            } else if (digits.length >= 4) {
-                formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-            } else if (digits.length >= 1) {
-                formatted = `(${digits}`;
-            }
-
+            const formatted = formatPhoneNumber(e.target.value);
             e.target.value = formatted;
             state.customerPhone = formatted;
             renderClient();
