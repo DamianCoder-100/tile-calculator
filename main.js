@@ -108,6 +108,7 @@ let quoteToDelete = null;
 let editingRoomId = null;
 let draggedRoomId = null;
 let touchReorderState = null;
+let mobileReorderSelection = null;
 const DRAFT_KEY = 'tilingDraft_v5_jmd';
 const QUOTES_KEY = 'tilingQuotes_v5_jmd';
 
@@ -557,11 +558,11 @@ function renderRooms() {
             </div>
         `;
         return `
-        <div class="card room-card mb-2" data-room-id="${room.id}" draggable="true">
+        <div class="card room-card mb-2 ${mobileReorderSelection === room.id ? 'reorder-selected' : ''}" data-room-id="${room.id}" draggable="true">
             <div class="card-body p-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <div class="d-flex align-items-center gap-2 w-50">
-                        <span class="text-muted drag-handle" title="Drag to reorder"><i class="bi bi-grip-vertical"></i></span>
+                        <button type="button" class="btn btn-link btn-sm text-muted p-0 drag-handle" title="Tap to move this room"><i class="bi bi-grip-vertical"></i></button>
                         <input type="text" class="form-control form-control-sm fw-bold room-name border-0 bg-transparent p-0" value="${escapeHtml(room.name)}" data-field="name">
                     </div>
                     <div class="d-flex gap-2">
@@ -1236,6 +1237,11 @@ function bindEvents() {
         });
     };
 
+    const clearMobileReorderSelection = () => {
+        mobileReorderSelection = null;
+        renderRooms();
+    };
+
     const finishRoomReorder = (targetRoomId) => {
         if (draggedRoomId === null || draggedRoomId === targetRoomId) {
             clearRoomDropTargets();
@@ -1261,6 +1267,7 @@ function bindEvents() {
         autoSave();
         draggedRoomId = null;
         touchReorderState = null;
+        mobileReorderSelection = null;
     };
 
     DOM.roomsContainer?.addEventListener('dragstart', (e) => {
@@ -1300,65 +1307,36 @@ function bindEvents() {
         touchReorderState = null;
     });
 
-    DOM.roomsContainer?.addEventListener('touchstart', (e) => {
+    DOM.roomsContainer?.addEventListener('click', (e) => {
         const handle = e.target.closest('.drag-handle');
         if (!handle) return;
         const card = handle.closest('.room-card');
         if (!card) return;
-        const touch = e.touches[0];
-        if (!touch) return;
         e.preventDefault();
         e.stopPropagation();
-        draggedRoomId = parseInt(card.dataset.roomId, 10);
-        touchReorderState = {
-            roomId: draggedRoomId,
-            pointerId: touch.identifier,
-            startX: touch.clientX,
-            startY: touch.clientY,
-            moved: false,
-            targetRoomId: null
-        };
-        card.classList.add('dragging');
-    }, { passive: false });
 
-    DOM.roomsContainer?.addEventListener('touchmove', (e) => {
-        if (!touchReorderState) return;
-        const touch = Array.from(e.touches).find(t => t.identifier === touchReorderState.pointerId);
-        if (!touch) return;
-        const dx = touch.clientX - touchReorderState.startX;
-        const dy = touch.clientY - touchReorderState.startY;
-        if (!touchReorderState.moved && Math.hypot(dx, dy) < 8) return;
-        touchReorderState.moved = true;
-        e.preventDefault();
-        clearRoomDropTargets();
-        const targetCard = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.room-card');
-        if (targetCard) {
-            touchReorderState.targetRoomId = parseInt(targetCard.dataset.roomId, 10);
-            if (touchReorderState.targetRoomId !== draggedRoomId) {
-                targetCard.classList.add('drop-target');
-            }
+        const roomId = parseInt(card.dataset.roomId, 10);
+        if (mobileReorderSelection === null) {
+            mobileReorderSelection = roomId;
+            renderRooms();
+            showToast('Room selected. Tap another room to place it there.', 1800, 'info');
+            return;
         }
-    }, { passive: false });
 
-    DOM.roomsContainer?.addEventListener('touchend', (e) => {
-        if (!touchReorderState) return;
-        const touch = Array.from(e.changedTouches).find(t => t.identifier === touchReorderState.pointerId);
-        if (!touch) return;
-        if (touchReorderState.moved) {
-            finishRoomReorder(touchReorderState.targetRoomId);
-        } else {
-            clearRoomDropTargets();
-            DOM.roomsContainer?.querySelectorAll('.room-card').forEach(el => el.classList.remove('dragging'));
-            draggedRoomId = null;
-            touchReorderState = null;
+        if (mobileReorderSelection === roomId) {
+            clearMobileReorderSelection();
+            return;
         }
-    });
 
-    DOM.roomsContainer?.addEventListener('touchcancel', () => {
-        clearRoomDropTargets();
-        DOM.roomsContainer?.querySelectorAll('.room-card').forEach(el => el.classList.remove('dragging'));
-        draggedRoomId = null;
-        touchReorderState = null;
+        const fromIndex = state.rooms.findIndex(r => r.id === mobileReorderSelection);
+        const toIndex = state.rooms.findIndex(r => r.id === roomId);
+        if (fromIndex < 0 || toIndex < 0) return;
+        const [moved] = state.rooms.splice(fromIndex, 1);
+        state.rooms.splice(toIndex, 0, moved);
+        mobileReorderSelection = null;
+        renderRooms();
+        updateEstimate();
+        autoSave();
     });
 
     DOM.roomsContainer?.addEventListener('input', (e) => {
