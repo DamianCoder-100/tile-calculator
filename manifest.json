@@ -8,15 +8,15 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "perry_calc_icon.png",
+      "src": "images/tile_calc_img.png",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "images/png",
       "purpose": "any"
     },
     {
-      "src": "perry_calc_icon.png",
+      "src": "images/tile_calc_img.png",
       "sizes": "512x512",
-      "type": "image/png", 
+      "type": "images/png",
       "purpose": "any maskable"
     }
   ]
