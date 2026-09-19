@@ -10,13 +10,13 @@
     {
       "src": "images/tile_calc_img.png",
       "sizes": "192x192",
-      "type": "images/png",
+      "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "images/tile_calc_img.png",
       "sizes": "512x512",
-      "type": "images/png",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
